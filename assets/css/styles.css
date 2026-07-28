@@ -44,7 +44,7 @@ h1,h2,h3,p{margin:0}
  * 1. Top bar
  * ------------------------------------------------------------------- */
 .topbar{
-  position:fixed; top:22px; left:22px; z-index:500;
+  position:fixed; top:58px; left:22px; z-index:500;
   display:flex; align-items:center; gap:10px;
 }
 .topbar-hamburger{
@@ -88,7 +88,7 @@ h1,h2,h3,p{margin:0}
 }
 .panel{
   position:relative; flex:1; min-width:0; height:100%;
-  display:flex; flex-direction:column;
+  display:flex; flex-direction:column; container-type:inline-size;
   border:none; padding:0; color:#fff; cursor:pointer;
   /* Punta de flecha a profundidad FIJA en px (no en %): si fuera un
      porcentaje del ancho, el panel expandido (mucho más ancho que los
@@ -110,17 +110,27 @@ h1,h2,h3,p{margin:0}
 .panel:nth-child(6){ background:var(--verde-oscuro); z-index:1; }
 .panel.expanded{ flex:6; cursor:default; background:var(--navy); z-index:7; }
 
+/* Centrado óptico, no geométrico: la punta de flecha (60px fijos) le come
+   masa visual al lado derecho del panel, así que el centro "real" de la
+   forma queda ~30px a la izquierda del centro de la caja. En el último
+   panel no hay punta (borde recto), así que ahí sí es 50% exacto. */
 .panel-icon{
-  position:absolute; top:14%; left:50%; transform:translateX(-50%);
+  position:absolute; top:14%; left:calc(50% - 30px); transform:translateX(-50%);
   width:34%; max-width:190px; opacity:.92; transition:opacity .3s var(--ease);
 }
+.panel:last-child .panel-icon{ left:50%; }
 .panel.expanded .panel-icon{ opacity:0; }
 .panel-icon svg{ width:100%; height:auto; display:block; }
 .panel-question-mark{
-  position:absolute; top:16%; left:50%; transform:translateX(-50%);
-  font-size:clamp(48px,9vw,120px); font-weight:800; color:#fff; opacity:.95;
+  position:absolute; top:16%; left:calc(50% - 30px); transform:translateX(-50%);
+  /* En cqw (ancho del propio panel, gracias a container-type en .panel),
+     NO en vw: con vw el símbolo se dimensionaba según el viewport
+     completo y se desbordaba o se veía enorme en paneles angostos. */
+  font-size:clamp(28px, 32cqw, 120px);
+  font-weight:800; color:#fff; opacity:.95;
   line-height:1; transition:opacity .3s var(--ease);
 }
+.panel:last-child .panel-question-mark{ left:50%; }
 .panel.expanded .panel-question-mark{ opacity:0; }
 
 .panel-footer{
@@ -350,10 +360,50 @@ h1,h2,h3,p{margin:0}
  * 9. Responsive
  * ------------------------------------------------------------------- */
 @media (max-width:820px){
+  /* Apiladas, la primera franja (INICIO) mide apenas ~100vh/6 — el
+     top:58px pensado para despejar la barra superior de Moodle en
+     escritorio ya no cabe ahí sin taparle la etiqueta al primer panel. */
+  .topbar{ top:14px; }
+  .topbar-hamburger{ width:40px; height:40px; }
+  .topbar-hamburger svg{ width:19px; height:19px; }
+
   .hero{ flex-direction:column; height:100vh; }
-  .panel{ clip-path:none !important; margin:0 !important; flex:1; }
-  .panel-footer{ padding-bottom:10px; }
+  .panel{
+    /* Misma flecha que en escritorio, girada 90°: en vez de apuntar a la
+       derecha, apunta hacia abajo — porque acá el apilado es vertical,
+       no horizontal. Profundidad más chica que en escritorio (26px, no
+       60px): cada franja mide apenas ~100-190px de ALTO, y con 60px de
+       solape la zona tapada por el panel de arriba se comía el ícono
+       entero de cada franja siguiente. */
+    clip-path:polygon(0 0, 100% 0, 100% calc(100% - 26px), 50% 100%, 0 calc(100% - 26px));
+    margin:-26px 0 0 0 !important;
+    flex:1;
+  }
+  .panel:first-child{ margin-top:0 !important; }
+  .panel:last-child{ clip-path:none; }
   .panel.expanded{ flex:8; }
+
+  /* Apiladas verticalmente, las 6 franjas quedan muy BAJAS (100vh/6), no
+     angostas — ahí el ancho ya no es la dimensión que aprieta, es el
+     alto. Los tamaños pensados para el acordeón horizontal (34% del
+     ancho, cqw, etc.) se desbordan sobre la franja de al lado. Todo lo
+     de acá abajo son tamaños fijos y chicos, pensados para esa franja
+     baja, no una simple reescala de lo de escritorio. `top` es un valor
+     fijo en px (no %) para que el ícono quede SIEMPRE por debajo de la
+     zona de solape (26px) sin importar cuánto mida la franja. */
+  .panel-icon{ top:32px; width:15%; max-width:38px; }
+  .panel-question-mark{ top:32px; font-size:clamp(18px, 7vh, 34px); }
+  /* La punta ahora está abajo al centro (no a la derecha), así que el
+     centrado óptico horizontal de escritorio no aplica: acá el centro
+     real SÍ es el centro geométrico. */
+  .panel-icon, .panel-question-mark{ left:50%; }
+  /* La punta hacia abajo se come el centro del borde inferior — el
+     zócalo tiene que quedar por ENCIMA de donde empieza esa punta
+     (100% - 26px), si no la flecha se lo recorta. */
+  .panel-footer{ bottom:32px; padding-bottom:6px; }
+  .panel-footer-shape{ padding:6px 16px 6px 12px; min-width:96px; }
+  .panel-footer-label{ font-size:.72rem; }
+
   .panel-active-title{ max-width:100%; font-size:1.4rem; }
   .panel-active-illustration svg{ width:70vw; }
   .split-content{ grid-template-columns:1fr; }

@@ -276,10 +276,10 @@
     $$(".panel", hero).forEach((panelEl) => {
       panelEl.addEventListener("click", (e) => {
         if (e.target.closest("[data-cta]")) return; // el CTA maneja su propio click
-        activateEje(panelEl.dataset.eje);
+        toggleEje(panelEl.dataset.eje);
       });
       panelEl.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activateEje(panelEl.dataset.eje); }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleEje(panelEl.dataset.eje); }
       });
     });
     $$("[data-cta]", hero).forEach((btn) => {
@@ -297,6 +297,19 @@
   // panel, esté o no ya expandido otro — solo mueve la clase .expanded.
   function activateEje(id) {
     $$(".panel", $("#hero")).forEach((p) => p.classList.toggle("expanded", p.dataset.eje === id));
+  }
+
+  // Clic directo sobre un panel: si ya estaba expandido, lo colapsa de
+  // vuelta a su forma original (toggle); si no, lo expande normalmente.
+  // Los demás disparadores (CTA, stepper, menú) siempre usan
+  // activateEje() porque ahí SIEMPRE se quiere terminar expandido.
+  function toggleEje(id) {
+    const panel = $(`.panel[data-eje="${id}"]`, $("#hero"));
+    if (panel.classList.contains("expanded")) {
+      panel.classList.remove("expanded");
+    } else {
+      activateEje(id);
+    }
   }
 
   /* ---------------------------------------------------------------------
