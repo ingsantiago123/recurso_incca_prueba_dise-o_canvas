@@ -45,11 +45,21 @@ test-iframe.html         ← ejemplo del patrón de embebido (name estático, si
 
 ```php
 <iframe id="incca-hero-section" title="Visor de recurso UNINCCA"
-  style="width:100%; height:1400px; border:0;"
+  style="width:100%; height:900px; border:0;"
   src="https://ingsantiago123.github.io/recurso_incca_prueba_dise-o_canvas/"
   name='<?php echo htmlspecialchars(json_encode($datosDelRecurso), ENT_QUOTES); ?>'>
 </iframe>
 ```
+
+**Importante sobre la altura:** el hero (`#hero`) mide `height:100vh` — el
+100% del alto que le des al iframe, no del navegador. Si el iframe mide
+1400px, el hero se estira a 1400px y se ve desproporcionado. `900px` es
+la misma convención que usa el visor original y el hero queda con una
+proporción correcta. El resto del contenido (header dinámico, video +
+pregunta, recursos) no tiene por qué caber sin scroll: el iframe hace su
+propio scroll interno para revelarlo, igual que cualquier página larga
+embebida en una caja de altura fija — no hace falta agrandar el iframe
+para "que quepa todo".
 
 El atributo `name` debe estar en el mismo tag que `src` desde el
 principio (HTML estático generado por PHP, sin JavaScript necesario). Si
