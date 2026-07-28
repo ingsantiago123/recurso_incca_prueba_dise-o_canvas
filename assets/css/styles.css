@@ -24,6 +24,10 @@
 
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;padding:0}
+html{ scrollbar-width:thin; scrollbar-color:var(--verde-cta) transparent; }
+html::-webkit-scrollbar{ width:10px; }
+html::-webkit-scrollbar-track{ background:transparent; }
+html::-webkit-scrollbar-thumb{ background:var(--verde-cta); border-radius:8px; border:2px solid var(--gris-fondo); }
 body{
   font-family:"Segoe UI",Roboto,Arial,sans-serif;
   background:var(--gris-fondo);
@@ -51,15 +55,6 @@ h1,h2,h3,p{margin:0}
 }
 .topbar-hamburger:hover{ transform:translateY(-2px); }
 .topbar-hamburger svg{ width:22px; height:22px; }
-.topbar-btn{
-  display:flex; align-items:center; gap:8px;
-  background:#fff; color:#1c2230; border:none; border-radius:12px;
-  padding:11px 16px; font-size:.85rem; font-weight:600;
-  box-shadow:var(--shadow-soft); transition:transform .2s var(--ease);
-}
-.topbar-btn:hover{ transform:translateY(-2px); }
-.topbar-btn svg{ width:18px; height:18px; flex:none; }
-.topbar-btn.is-active{ background:var(--navy); color:#fff; }
 
 /* ---------------------------------------------------------------------
  * 2. Menú lateral (hamburguesa)
@@ -92,18 +87,20 @@ h1,h2,h3,p{margin:0}
   width:100vw; height:100vh; display:flex; overflow:hidden; position:relative;
 }
 .panel{
-  position:relative; flex:1 1 0; min-width:0; height:100%;
-  display:flex; flex-direction:column; justify-content:flex-end;
-  border:none; padding:0; margin:0; color:#fff; cursor:pointer;
-  clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%);
-  transition:flex-grow .65s var(--ease), background-color .5s var(--ease), margin .65s var(--ease);
-  z-index:1;
+  position:relative; flex:1; min-width:0; height:100%;
+  display:flex; flex-direction:column;
+  border:none; padding:0; color:#fff; cursor:pointer;
+  /* Punta de flecha a profundidad FIJA en px (no en %): si fuera un
+     porcentaje del ancho, el panel expandido (mucho más ancho que los
+     demás) generaría un hueco diagonal enorme, porque el panel vecino
+     solo se solapa 60px y no alcanzaría a taparla. */
+  clip-path:polygon(0 0, calc(100% - 60px) 0, 100% 50%, calc(100% - 60px) 100%, 0 100%);
+  transition:flex .5s ease, background-color .5s ease;
+  margin-left:-60px;
 }
-/* El solape en punta solo aplica en el estado inicial (6 columnas anchas);
-   en el estado comprimido los paneles son demasiado angostos para solaparse
-   sin taparse el área de clic entre sí. */
-.hero:not(.has-active) .panel{ margin-left:-40px; }
-.hero:not(.has-active) .panel:first-child{ margin-left:0; }
+/* Solape permanente en punta para que las flechas encajen sin huecos,
+   tanto en el estado inicial (6 columnas iguales) como en el comprimido. */
+.panel:first-child{ margin-left:0; }
 .panel:last-child{ clip-path:none; }
 .panel:nth-child(1){ background:var(--amarillo); z-index:6; }
 .panel:nth-child(2){ background:var(--naranja); z-index:5; }
@@ -111,27 +108,26 @@ h1,h2,h3,p{margin:0}
 .panel:nth-child(4){ background:var(--azul-oscuro); z-index:3; }
 .panel:nth-child(5){ background:var(--verde-claro); z-index:2; }
 .panel:nth-child(6){ background:var(--verde-oscuro); z-index:1; }
-.hero.has-active .panel{ flex-grow:.55; cursor:pointer; }
-.hero.has-active .panel.is-active{ flex-grow:11; cursor:default; background:var(--navy); }
+.panel.expanded{ flex:6; cursor:default; background:var(--navy); z-index:7; }
 
 .panel-icon{
   position:absolute; top:14%; left:50%; transform:translateX(-50%);
   width:34%; max-width:190px; opacity:.92; transition:opacity .3s var(--ease);
 }
-.hero.has-active .panel:not(.is-active) .panel-icon{ opacity:.85; }
-.hero.has-active .panel.is-active .panel-icon{ opacity:0; }
+.panel.expanded .panel-icon{ opacity:0; }
 .panel-icon svg{ width:100%; height:auto; display:block; }
 .panel-question-mark{
   position:absolute; top:16%; left:50%; transform:translateX(-50%);
   font-size:clamp(48px,9vw,120px); font-weight:800; color:#fff; opacity:.95;
-  line-height:1;
+  line-height:1; transition:opacity .3s var(--ease);
 }
+.panel.expanded .panel-question-mark{ opacity:0; }
 
 .panel-footer{
-  position:relative; margin:0 0 34px 0; align-self:flex-start;
+  position:absolute; left:0; bottom:0; z-index:2;
   transition:opacity .25s var(--ease);
 }
-.hero.has-active .panel.is-active .panel-footer{ opacity:0; pointer-events:none; }
+.panel.expanded .panel-footer{ opacity:0; pointer-events:none; }
 .panel-footer-shape{
   background:#fff; padding:10px 22px 10px 16px; clip-path:polygon(0 0,100% 0,88% 100%,0 100%);
   min-width:120px;
@@ -146,7 +142,7 @@ h1,h2,h3,p{margin:0}
   opacity:0; pointer-events:none; transition:opacity .35s var(--ease) .15s;
   padding:56px 6% 46px;
 }
-.hero.has-active .panel.is-active .panel-active-content{ opacity:1; pointer-events:auto; }
+.panel.expanded .panel-active-content{ opacity:1; pointer-events:auto; }
 
 .panel-watermark{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
@@ -170,7 +166,8 @@ h1,h2,h3,p{margin:0}
   position:relative; z-index:1; flex:1 1 auto; display:flex; align-items:center; justify-content:center;
   min-height:0; overflow:hidden;
 }
-.panel-active-illustration svg{ width:100%; height:100%; max-width:480px; max-height:100%; }
+.panel-active-illustration svg,
+.panel-active-illustration img{ width:100%; height:100%; max-width:480px; max-height:100%; object-fit:contain; }
 
 .panel-cta{
   position:relative; z-index:1; align-self:flex-start; background:none; border:none;
@@ -185,11 +182,34 @@ h1,h2,h3,p{margin:0}
 .panel-cta svg{ width:18px;height:18px; }
 
 /* ---------------------------------------------------------------------
- * 4. Stepper persistente
+ * 4-5. Dynamic Header (incluye el stepper: es una sola pieza inmersiva,
+ * NO una barra sólida aparte encima de la foto — por eso el stepper no
+ * es sticky y no "contamina" las secciones de abajo al hacer scroll).
  * ------------------------------------------------------------------- */
-.stepper-wrap{
-  position:sticky; top:0; z-index:200; background:var(--navy);
-  padding:22px 4% 26px;
+.dynamic-header{
+  position:relative; width:100%; min-height:72vh; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:space-between;
+  background-color:#1b2540;
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+}
+.dynamic-header::before{
+  content:""; position:absolute; inset:0; opacity:.82; mix-blend-mode:multiply;
+  transition:background .5s var(--ease);
+}
+.dynamic-header.filtro-amarillo::before{ background:var(--amarillo); }
+.dynamic-header.filtro-naranja::before{ background:var(--naranja); }
+.dynamic-header.filtro-azul-claro::before{ background:var(--azul-claro); }
+.dynamic-header.filtro-azul-oscuro::before{ background:var(--azul-oscuro); }
+.dynamic-header.filtro-verde-claro::before{ background:var(--verde-claro); }
+.dynamic-header.filtro-verde-oscuro::before{ background:var(--verde-oscuro); }
+
+.dynamic-header-watermark{
+  position:absolute; right:2%; top:-6%; font-size:min(46vw,520px); font-weight:800;
+  color:#fff; opacity:.14; line-height:1; z-index:1; pointer-events:none;
+}
+
+.dynamic-header-stepper{
+  position:relative; z-index:2; padding:100px 4% 0;
 }
 .stepper{
   position:relative; max-width:1100px; margin:0 auto; height:2px;
@@ -209,50 +229,24 @@ h1,h2,h3,p{margin:0}
 .stepper-node-label{
   position:absolute; top:22px; left:50%; transform:translateX(-50%); white-space:nowrap;
   color:#fff; font-size:.68rem; font-weight:700; letter-spacing:.05em; opacity:.75;
+  text-shadow:0 1px 6px rgba(0,0,0,.35);
 }
 .stepper-node.is-current .stepper-node-label{ opacity:1; color:var(--verde-cta); }
 
-/* ---------------------------------------------------------------------
- * 5. Dynamic Header
- * ------------------------------------------------------------------- */
-.dynamic-header{
-  position:relative; width:100%; min-height:72vh; overflow:hidden;
-  display:flex; align-items:flex-end;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(255,255,255,.10), transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(255,255,255,.08), transparent 45%),
-    repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 42px),
-    linear-gradient(135deg,#1b2540,#0c1330 60%,#141c38);
-}
-.dynamic-header::before{
-  content:""; position:absolute; inset:0; opacity:.8; transition:background .5s var(--ease);
-}
-.dynamic-header.filtro-amarillo::before{ background:var(--amarillo); }
-.dynamic-header.filtro-naranja::before{ background:var(--naranja); }
-.dynamic-header.filtro-azul-claro::before{ background:var(--azul-claro); }
-.dynamic-header.filtro-azul-oscuro::before{ background:var(--azul-oscuro); }
-.dynamic-header.filtro-verde-claro::before{ background:var(--verde-claro); }
-.dynamic-header.filtro-verde-oscuro::before{ background:var(--verde-oscuro); }
-
-.dynamic-header-watermark{
-  position:absolute; right:2%; top:-6%; font-size:min(46vw,520px); font-weight:800;
-  color:#fff; opacity:.10; line-height:1; z-index:1; pointer-events:none;
-}
 .dynamic-header-content{
   position:relative; z-index:2; padding:0 6% 64px; max-width:900px;
 }
 .dynamic-header-tag{
-  display:inline-block; background:var(--magenta); color:#fff; font-weight:800;
-  letter-spacing:.08em; font-size:.82rem; padding:8px 18px; border-radius:2px 10px 2px 10px;
-  margin-bottom:20px;
+  display:block; color:#fff; opacity:.8; font-weight:700;
+  letter-spacing:.08em; font-size:.82rem; text-transform:uppercase;
+  margin-bottom:14px;
 }
 .dynamic-header-title{
   color:#fff; font-weight:800; font-size:clamp(1.7rem,4vw,3.2rem); line-height:1.12;
-  text-shadow:0 6px 24px rgba(0,0,0,.25);
 }
 .dynamic-header-brand{
-  position:absolute; right:5%; bottom:5%; z-index:3; background:#fff; border-radius:8px;
-  padding:12px 20px; box-shadow:var(--shadow-soft);
+  position:absolute; right:0; bottom:0; z-index:3; background:#fff;
+  padding:12px 20px;
 }
 .dynamic-header-brand span{ font-weight:800; letter-spacing:.05em; color:#3a3f47; font-size:1rem; }
 
@@ -332,7 +326,12 @@ h1,h2,h3,p{margin:0}
   background:linear-gradient(160deg,var(--navy-2),var(--navy)); border-radius:26px;
   padding:50px 6% 44px; position:relative; text-align:center; color:#fff;
   transform:scale(.95); transition:transform .3s var(--ease);
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.4) transparent;
 }
+.resource-modal::-webkit-scrollbar{ width:8px; }
+.resource-modal::-webkit-scrollbar-track{ background:transparent; }
+.resource-modal::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.4); border-radius:8px; }
+.resource-modal::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,.6); }
 .resource-modal-overlay.is-open .resource-modal{ transform:scale(1); }
 .resource-modal-close{
   position:absolute; top:22px; right:22px; width:40px;height:40px; border-radius:50%;
@@ -348,31 +347,17 @@ h1,h2,h3,p{margin:0}
 .resource-modal-mascot{ width:96px; margin:26px auto 0; opacity:.92; }
 
 /* ---------------------------------------------------------------------
- * 9. Toast
- * ------------------------------------------------------------------- */
-.toast{
-  position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px);
-  background:var(--navy); color:#fff; padding:13px 22px; border-radius:12px; font-size:.88rem;
-  font-weight:600; display:flex; align-items:center; gap:10px; opacity:0; pointer-events:none;
-  transition:all .3s var(--ease); z-index:1000; box-shadow:var(--shadow-soft);
-}
-.toast.is-visible{ opacity:1; transform:translate(-50%,0); }
-.toast svg{ width:18px;height:18px; color:var(--verde-cta); flex:none; }
-
-/* ---------------------------------------------------------------------
- * 10. Responsive
+ * 9. Responsive
  * ------------------------------------------------------------------- */
 @media (max-width:820px){
   .hero{ flex-direction:column; height:100vh; }
-  .panel{ clip-path:none !important; margin:0 !important; }
-  .panel-footer{ margin-bottom:10px; }
-  .hero.has-active .panel{ flex-grow:.3; }
-  .hero.has-active .panel.is-active{ flex-grow:8; }
+  .panel{ clip-path:none !important; margin:0 !important; flex:1; }
+  .panel-footer{ padding-bottom:10px; }
+  .panel.expanded{ flex:8; }
   .panel-active-title{ max-width:100%; font-size:1.4rem; }
   .panel-active-illustration svg{ width:70vw; }
   .split-content{ grid-template-columns:1fr; }
   .split-video{ min-height:320px; }
   .dynamic-header-content{ max-width:100%; }
   .topbar{ flex-wrap:wrap; max-width:78vw; }
-  .topbar-btn span{ display:none; }
 }

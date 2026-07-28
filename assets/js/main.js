@@ -22,8 +22,13 @@
  * 1-4, CIERRE), sus colores/íconos/orden, y su micro-copy de estado
  * ("Pregunta", "Conceptualicemos"...). Lo que es CONTENIDO (viene del
  * JSON, con placeholder por campo si falta): el nombre del curso, el
- * título grande de cada eje, la pregunta detonante, el video y los
- * recursos.
+ * título grande de cada eje, la pregunta detonante, el video, la
+ * ilustración del panel y los recursos.
+ *
+ * "ilustracion" (por sección) es la URL de una imagen PNG/SVG con fondo
+ * transparente que se muestra en el panel expandido del acordeón, en vez
+ * de la ilustración isométrica genérica de por defecto. Si el campo no
+ * llega, se usa esa ilustración genérica como respaldo.
  * ------------------------------------------------------------------- */
 (function () {
   "use strict";
@@ -53,6 +58,7 @@
     titulo_header: "Título de esta sección",
     pregunta: "Aquí aparecerá la pregunta detonante de esta sección.",
     video: "",
+    ilustracion: "",
     recursos: []
   };
   const SIN_DATOS = { curso: "Nombre del curso", secciones: {} };
@@ -78,6 +84,7 @@
         titulo_header: s.titulo_header || SIN_DATOS_SECCION.titulo_header,
         pregunta: s.pregunta || SIN_DATOS_SECCION.pregunta,
         video: s.video || SIN_DATOS_SECCION.video,
+        ilustracion: s.ilustracion || SIN_DATOS_SECCION.ilustracion,
         recursos: Array.isArray(s.recursos) ? s.recursos : SIN_DATOS_SECCION.recursos
       };
     });
@@ -187,23 +194,44 @@
   }
 
   /* ---------------------------------------------------------------------
-   * 4. Utilidades: toast, focus, scroll suave
+   * 4. Utilidades: scroll suave + salida sin retorno del hero
    * ------------------------------------------------------------------- */
-  let toastTimer = null;
-  function showToast(message, iconSvg) {
-    const toast = $("#toast");
-    if (!toast) return;
-    toast.innerHTML = `${iconSvg || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>`}<span>${message}</span>`;
-    toast.classList.add("is-visible");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 3200);
+  // El acordeón de portada es de una sola entrada: una vez el usuario pasa
+  // al contenido del curso, se saca del flujo del documento (display:none)
+  // para que ya no exista nada arriba de dynamic-header — así no hay forma
+  // de volver a verlo haciendo scroll hacia arriba. Se compensa scrollY
+  // por la altura que tenía el hero para que la vista no salte.
+  function retireHero() {
+    const hero = $("#hero");
+    if (!hero || hero.dataset.retired) return;
+    const heroHeight = hero.offsetHeight;
+    const scrollBefore = window.scrollY;
+    hero.style.display = "none";
+    hero.dataset.retired = "true";
+    window.scrollTo(0, Math.max(0, scrollBefore - heroHeight));
   }
 
   function unlockScrollAndGoTo(targetEl) {
     document.body.classList.remove("scroll-locked");
     if (targetEl) {
-      setTimeout(() => targetEl.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+      setTimeout(() => {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(retireHero, 650);
+      }, 60);
     }
+  }
+
+  // Único camino de vuelta a la portada: el menú "UNINCCA · Mapa". Al
+  // volver, se re-arma el candado — la portada vuelve a exigir su propio
+  // "INICIAR MÓDULO" (o el CTA de un eje) antes de dejar avanzar de nuevo,
+  // igual que en la primera carga de la página.
+  function returnToHeroAndRelock() {
+    const hero = $("#hero");
+    $$(".panel", hero).forEach((p) => p.classList.remove("expanded"));
+    hero.style.display = "";
+    delete hero.dataset.retired;
+    window.scrollTo(0, 0);
+    document.body.classList.add("scroll-locked");
   }
 
   /* ---------------------------------------------------------------------
@@ -223,7 +251,11 @@
           <div class="panel-watermark" aria-hidden="true"><span>${ej.watermark} ${ej.watermark} ${ej.watermark}</span></div>
           <span class="panel-active-tag">${ej.etiqueta}</span>
           <h2 class="panel-active-title">${datos.secciones[ej.id].titulo_header}</h2>
-          <div class="panel-active-illustration">${isometricIllustration()}</div>
+          <div class="panel-active-illustration">${
+            datos.secciones[ej.id].ilustracion
+              ? `<img src="${datos.secciones[ej.id].ilustracion}" alt="" loading="lazy">`
+              : isometricIllustration()
+          }</div>
           <button class="panel-cta" type="button" data-cta="${ej.id}">
             ${ej.id === "inicio" ? "INICIAR MÓDULO" : "IR A ESTA SECCIÓN"}
             <span class="cta-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
@@ -231,6 +263,15 @@
         </div>
       </div>
     `).join("");
+
+    // Si la imagen configurada no carga (link roto, hotlink bloqueado por
+    // el sitio de origen, etc.), cae de vuelta a la ilustración genérica
+    // en vez de dejar el ícono de imagen rota.
+    $$(".panel-active-illustration img", hero).forEach((img) => {
+      img.addEventListener("error", () => {
+        img.closest(".panel-active-illustration").innerHTML = isometricIllustration();
+      }, { once: true });
+    });
 
     $$(".panel", hero).forEach((panelEl) => {
       panelEl.addEventListener("click", (e) => {
@@ -252,10 +293,10 @@
     });
   }
 
+  // Único punto de verdad del acordeón: SIEMPRE clickeable, en cualquier
+  // panel, esté o no ya expandido otro — solo mueve la clase .expanded.
   function activateEje(id) {
-    const hero = $("#hero");
-    hero.classList.add("has-active");
-    $$(".panel", hero).forEach((p) => p.classList.toggle("is-active", p.dataset.eje === id));
+    $$(".panel", $("#hero")).forEach((p) => p.classList.toggle("expanded", p.dataset.eje === id));
   }
 
   /* ---------------------------------------------------------------------
@@ -298,6 +339,9 @@
 
     const header = $("#dynamicHeader");
     header.className = "dynamic-header " + ej.filtro;
+    // Placeholder fotográfico por sección (picsum, con seed fija para que no
+    // cambie entre recargas); reemplazar por fotografía institucional real.
+    header.style.backgroundImage = `url("https://picsum.photos/seed/unincca-${id}/1600/1000")`;
     $("#dynamicHeaderWatermark").textContent = ej.numero || "";
     $("#dynamicHeaderTag").textContent = `${ej.etiqueta} · ${ej.estado}`;
     $("#dynamicHeaderTitle").textContent = seccion.titulo_header;
@@ -378,15 +422,28 @@
   }
 
   /* ---------------------------------------------------------------------
-   * 9. Top bar: menú lateral, "ver como estudiante", lector inmersivo
+   * 9. Top bar: menú lateral
    * ------------------------------------------------------------------- */
   function renderSideMenu() {
-    $("#sideMenuItems").innerHTML = EJES.map((ej) => `
+    // "Portada de ejes" es la ÚNICA forma de volver al acordeón — y al
+    // usarla, la portada vuelve a quedar bloqueada (ver
+    // returnToHeroAndRelock) en vez de quedar accesible por scroll libre.
+    const backItem = `
+      <button class="side-menu-item" type="button" id="sideMenuBackToHero">
+        <span class="dot" style="background:var(--verde-cta)"></span>
+        Portada de ejes
+      </button>
+    `;
+    $("#sideMenuItems").innerHTML = backItem + EJES.map((ej) => `
       <button class="side-menu-item" type="button" data-goto="${ej.id}">
         <span class="dot" style="background:var(--${ej.color})"></span>
         ${ej.etiqueta} · ${ej.estado}
       </button>
     `).join("");
+    $("#sideMenuBackToHero").addEventListener("click", () => {
+      returnToHeroAndRelock();
+      closeSideMenu();
+    });
     $$("[data-goto]", $("#sideMenuItems")).forEach((btn) => {
       btn.addEventListener("click", () => {
         activateEje(btn.dataset.goto);
@@ -406,33 +463,6 @@
     });
     $("#sideMenuClose").addEventListener("click", closeSideMenu);
     $("#sideMenuOverlay").addEventListener("click", (e) => { if (e.target.id === "sideMenuOverlay") closeSideMenu(); });
-
-    $("#studentViewBtn").addEventListener("click", () => {
-      const btn = $("#studentViewBtn");
-      const active = btn.classList.toggle("is-active");
-      showToast(active ? "Vista de estudiante activada." : "Vista de estudiante desactivada.");
-    });
-
-    $("#immersiveReaderBtn").addEventListener("click", () => {
-      const btn = $("#immersiveReaderBtn");
-      if (!("speechSynthesis" in window)) {
-        showToast("El lector inmersivo no está disponible en este navegador.");
-        return;
-      }
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        btn.classList.remove("is-active");
-        return;
-      }
-      const titulo = $("#dynamicHeaderTitle").textContent;
-      const pregunta = $("#splitQuestion").textContent;
-      const utter = new SpeechSynthesisUtterance(`${titulo}. ${pregunta}`);
-      utter.lang = "es-ES";
-      utter.onend = () => btn.classList.remove("is-active");
-      btn.classList.add("is-active");
-      window.speechSynthesis.speak(utter);
-      showToast("Leyendo en voz alta la sección actual…");
-    });
   }
 
   /* ---------------------------------------------------------------------

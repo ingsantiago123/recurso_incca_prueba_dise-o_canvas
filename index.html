@@ -28,14 +28,6 @@
   <button class="topbar-hamburger" id="menuToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="sideMenuOverlay">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
-  <button class="topbar-btn" id="studentViewBtn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="12" r="3.4"/><circle cx="17" cy="12" r="3.4"/><line x1="10.4" y1="12" x2="13.6" y2="12"/></svg>
-    <span>Ver como estudiante</span>
-  </button>
-  <button class="topbar-btn" id="immersiveReaderBtn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5.5c2.5-1 5-1 8 0v13c-3-1-5.5-1-8 0v-13z"/><path d="M20 5.5c-2.5-1-5-1-8 0v13c3-1 5.5-1 8 0v-13z"/></svg>
-    <span>Lector inmersivo</span>
-  </button>
 </div>
 
 <!-- Menú lateral -->
@@ -59,18 +51,20 @@
 <!-- Cuerpo del curso: aparece al desbloquear el scroll -->
 <main id="courseBody">
 
-  <!-- Stepper persistente -->
-  <div class="stepper-wrap">
-    <div class="stepper" id="stepper" role="tablist" aria-label="Progreso del curso">
-      <div class="stepper-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 6 9 12 15 18"/></svg></div>
-      <div class="stepper-nodes" id="stepperNodes"></div>
-      <div class="stepper-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 6 15 12 9 18"/></svg></div>
-    </div>
-  </div>
-
-  <!-- Dynamic Header -->
+  <!-- Dynamic Header: la imagen/color de fondo cubre TODA la sección,
+       incluido el stepper — no es un bloque aparte, para que se sienta
+       una sola pieza inmersiva en vez de una barra sólida pegada arriba. -->
   <header class="dynamic-header" id="dynamicHeader">
     <div class="dynamic-header-watermark" id="dynamicHeaderWatermark" aria-hidden="true"></div>
+
+    <div class="dynamic-header-stepper">
+      <div class="stepper" id="stepper" role="tablist" aria-label="Progreso del curso">
+        <div class="stepper-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 6 9 12 15 18"/></svg></div>
+        <div class="stepper-nodes" id="stepperNodes"></div>
+        <div class="stepper-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 6 15 12 9 18"/></svg></div>
+      </div>
+    </div>
+
     <div class="dynamic-header-content">
       <span class="dynamic-header-tag" id="dynamicHeaderTag"></span>
       <h1 class="dynamic-header-title" id="dynamicHeaderTitle"></h1>
@@ -118,8 +112,6 @@
     <img class="resource-modal-mascot" id="resourceModalMascot" alt="" aria-hidden="true">
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script src="./assets/js/main.js" defer></script>
 </body>

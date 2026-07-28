@@ -32,13 +32,14 @@ test-iframe.html         ← ejemplo del patrón de embebido (name estático, si
 ## Qué es diseño fijo vs. qué es contenido dinámico
 
 - **Fijo (diseño, vive en el código):** los 6 ejes del curso (INICIO,
-  EJE 1-4, CIERRE), su orden, color e ícono, y su micro-copy de estado
-  ("Pregunta", "Conceptualicemos", "Analicemos", "Apliquemos",
+  EJE 1-4, CIERRE), su orden, color e ícono de línea, y su micro-copy de
+  estado ("Pregunta", "Conceptualicemos", "Analicemos", "Apliquemos",
   "Evaluemos", "Cerremos"); las etiquetas de interfaz que nunca cambian
-  ("Ver como estudiante", "Lector inmersivo", "UNINCCA").
+  ("UNINCCA").
 - **Dinámico (viene del JSON):** el nombre del curso, el título grande de
-  cada eje, la pregunta detonante de cada eje, el video y la lista de
-  recursos (con su contenido para el visor a pantalla completa).
+  cada eje, la pregunta detonante de cada eje, el video, la ilustración
+  del panel expandido y la lista de recursos (con su contenido para el
+  visor a pantalla completa).
 
 ## Cómo embeberlo en Moodle
 
@@ -73,6 +74,7 @@ el diseño:
       "titulo_header": "Título grande del encabezado dinámico",
       "pregunta": "Pregunta detonante de esta sección",
       "video": "url de YouTube/Vimeo/Drive",
+      "ilustracion": "url de una imagen PNG/SVG con fondo transparente (opcional; si falta, se usa una ilustración isométrica genérica)",
       "recursos": [
         { "titulo": "Nombre del recurso", "resumen": "Subtítulo corto", "cuerpo": ["párrafo 1", "párrafo 2"] }
       ]
