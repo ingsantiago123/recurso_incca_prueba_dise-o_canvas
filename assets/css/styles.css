@@ -1,0 +1,378 @@
+/*!
+ * U.INCCA · Visor V2 "Canvas" — vanilla CSS, sin frameworks.
+ * Paleta y geometría fijas (diseño). El contenido real llega por JS
+ * desde window.name — ver assets/js/main.js.
+ * ------------------------------------------------------------------- */
+
+:root{
+  --amarillo:#FFC629;
+  --naranja:#FF7A3D;
+  --azul-claro:#35A7E6;
+  --azul-oscuro:#0B2A6B;
+  --verde-claro:#3FBF7F;
+  --verde-oscuro:#146C43;
+  --magenta:#D6007F;
+  --verde-cta:#21C15E;
+  --gris-fondo:#F3F4F7;
+  --gris-texto:#4A4F58;
+  --navy:#0A1440;
+  --navy-2:#0E1B52;
+  --white:#FFFFFF;
+  --shadow-soft:0 10px 30px rgba(10,20,64,.10);
+  --ease:cubic-bezier(.22,.9,.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--gris-fondo);
+  color:var(--gris-texto);
+  overflow-x:hidden;
+}
+body.scroll-locked{ overflow:hidden; height:100vh; }
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer}
+h1,h2,h3,p{margin:0}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------------------------------------------------------------------
+ * 1. Top bar
+ * ------------------------------------------------------------------- */
+.topbar{
+  position:fixed; top:22px; left:22px; z-index:500;
+  display:flex; align-items:center; gap:10px;
+}
+.topbar-hamburger{
+  width:46px;height:46px;border-radius:12px;border:none;
+  background:var(--verde-cta); color:#fff; display:flex; align-items:center;
+  justify-content:center; box-shadow:var(--shadow-soft);
+  transition:transform .2s var(--ease);
+}
+.topbar-hamburger:hover{ transform:translateY(-2px); }
+.topbar-hamburger svg{ width:22px; height:22px; }
+.topbar-btn{
+  display:flex; align-items:center; gap:8px;
+  background:#fff; color:#1c2230; border:none; border-radius:12px;
+  padding:11px 16px; font-size:.85rem; font-weight:600;
+  box-shadow:var(--shadow-soft); transition:transform .2s var(--ease);
+}
+.topbar-btn:hover{ transform:translateY(-2px); }
+.topbar-btn svg{ width:18px; height:18px; flex:none; }
+.topbar-btn.is-active{ background:var(--navy); color:#fff; }
+
+/* ---------------------------------------------------------------------
+ * 2. Menú lateral (hamburguesa)
+ * ------------------------------------------------------------------- */
+.side-menu-overlay{
+  position:fixed; inset:0; z-index:600; background:rgba(8,12,32,.55);
+  opacity:0; pointer-events:none; transition:opacity .25s var(--ease);
+}
+.side-menu-overlay.is-open{ opacity:1; pointer-events:auto; }
+.side-menu{
+  position:absolute; top:0; left:0; height:100%; width:min(320px,84vw);
+  background:#fff; padding:26px 22px; transform:translateX(-100%);
+  transition:transform .3s var(--ease); display:flex; flex-direction:column; gap:6px;
+}
+.side-menu-overlay.is-open .side-menu{ transform:translateX(0); }
+.side-menu-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.side-menu-title{ font-weight:700; color:var(--navy); font-size:1.05rem; }
+.side-menu-close{ background:none;border:none;color:var(--navy); }
+.side-menu-item{
+  display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:10px;
+  background:none; border:none; text-align:left; color:#333; font-size:.92rem; font-weight:600;
+}
+.side-menu-item:hover{ background:var(--gris-fondo); }
+.side-menu-item .dot{ width:10px;height:10px;border-radius:50%;flex:none; }
+
+/* ---------------------------------------------------------------------
+ * 3. Hero — acordeón horizontal
+ * ------------------------------------------------------------------- */
+.hero{
+  width:100vw; height:100vh; display:flex; overflow:hidden; position:relative;
+}
+.panel{
+  position:relative; flex:1 1 0; min-width:0; height:100%;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  border:none; padding:0; margin:0; color:#fff; cursor:pointer;
+  clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%);
+  transition:flex-grow .65s var(--ease), background-color .5s var(--ease), margin .65s var(--ease);
+  z-index:1;
+}
+/* El solape en punta solo aplica en el estado inicial (6 columnas anchas);
+   en el estado comprimido los paneles son demasiado angostos para solaparse
+   sin taparse el área de clic entre sí. */
+.hero:not(.has-active) .panel{ margin-left:-40px; }
+.hero:not(.has-active) .panel:first-child{ margin-left:0; }
+.panel:last-child{ clip-path:none; }
+.panel:nth-child(1){ background:var(--amarillo); z-index:6; }
+.panel:nth-child(2){ background:var(--naranja); z-index:5; }
+.panel:nth-child(3){ background:var(--azul-claro); z-index:4; }
+.panel:nth-child(4){ background:var(--azul-oscuro); z-index:3; }
+.panel:nth-child(5){ background:var(--verde-claro); z-index:2; }
+.panel:nth-child(6){ background:var(--verde-oscuro); z-index:1; }
+.hero.has-active .panel{ flex-grow:.55; cursor:pointer; }
+.hero.has-active .panel.is-active{ flex-grow:11; cursor:default; background:var(--navy); }
+
+.panel-icon{
+  position:absolute; top:14%; left:50%; transform:translateX(-50%);
+  width:34%; max-width:190px; opacity:.92; transition:opacity .3s var(--ease);
+}
+.hero.has-active .panel:not(.is-active) .panel-icon{ opacity:.85; }
+.hero.has-active .panel.is-active .panel-icon{ opacity:0; }
+.panel-icon svg{ width:100%; height:auto; display:block; }
+.panel-question-mark{
+  position:absolute; top:16%; left:50%; transform:translateX(-50%);
+  font-size:clamp(48px,9vw,120px); font-weight:800; color:#fff; opacity:.95;
+  line-height:1;
+}
+
+.panel-footer{
+  position:relative; margin:0 0 34px 0; align-self:flex-start;
+  transition:opacity .25s var(--ease);
+}
+.hero.has-active .panel.is-active .panel-footer{ opacity:0; pointer-events:none; }
+.panel-footer-shape{
+  background:#fff; padding:10px 22px 10px 16px; clip-path:polygon(0 0,100% 0,88% 100%,0 100%);
+  min-width:120px;
+}
+.panel-footer-label{
+  color:var(--magenta); font-weight:800; letter-spacing:.06em; font-size:.86rem; white-space:nowrap;
+}
+
+/* Contenido expandido del panel activo */
+.panel-active-content{
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  opacity:0; pointer-events:none; transition:opacity .35s var(--ease) .15s;
+  padding:56px 6% 46px;
+}
+.hero.has-active .panel.is-active .panel-active-content{ opacity:1; pointer-events:auto; }
+
+.panel-watermark{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  overflow:hidden; pointer-events:none; z-index:0;
+}
+.panel-watermark span{
+  font-size:clamp(48px,9vw,140px); font-weight:800; color:#fff; opacity:.06;
+  white-space:nowrap; letter-spacing:.02em; transform:rotate(0deg);
+}
+
+.panel-active-tag{
+  position:relative; z-index:1; align-self:flex-start;
+  background:var(--magenta); color:#fff; font-weight:800; letter-spacing:.08em;
+  font-size:.82rem; padding:8px 18px; border-radius:2px 10px 2px 10px;
+}
+.panel-active-title{
+  position:relative; z-index:1; color:#fff; font-weight:800; margin-top:18px;
+  font-size:clamp(1.5rem,3.4vw,2.6rem); line-height:1.15; max-width:60%;
+}
+.panel-active-illustration{
+  position:relative; z-index:1; flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+  min-height:0; overflow:hidden;
+}
+.panel-active-illustration svg{ width:100%; height:100%; max-width:480px; max-height:100%; }
+
+.panel-cta{
+  position:relative; z-index:1; align-self:flex-start; background:none; border:none;
+  display:flex; align-items:center; gap:12px; color:#fff; font-weight:700; font-size:1rem;
+  padding:0;
+}
+.panel-cta .cta-arrow{
+  width:42px;height:42px;border-radius:50%; background:var(--verde-cta);
+  display:flex; align-items:center; justify-content:center; transition:transform .25s var(--ease);
+}
+.panel-cta:hover .cta-arrow{ transform:translateX(5px); }
+.panel-cta svg{ width:18px;height:18px; }
+
+/* ---------------------------------------------------------------------
+ * 4. Stepper persistente
+ * ------------------------------------------------------------------- */
+.stepper-wrap{
+  position:sticky; top:0; z-index:200; background:var(--navy);
+  padding:22px 4% 26px;
+}
+.stepper{
+  position:relative; max-width:1100px; margin:0 auto; height:2px;
+  background:rgba(255,255,255,.35); display:flex; align-items:center; justify-content:space-between;
+}
+.stepper-arrow{ width:20px;height:20px; color:#fff; opacity:.7; flex:none; }
+.stepper-arrow svg{ width:100%;height:100%; }
+.stepper-nodes{ flex:1; display:flex; justify-content:space-between; align-items:center; padding:0 14px; }
+.stepper-node{
+  position:relative; background:none; border:2px solid #fff; width:12px; height:12px; border-radius:50%;
+  padding:0; transition:all .25s var(--ease);
+}
+.stepper-node:hover{ transform:scale(1.2); }
+.stepper-node.is-current{
+  width:20px;height:20px; background:var(--verde-cta); border-color:var(--verde-cta);
+}
+.stepper-node-label{
+  position:absolute; top:22px; left:50%; transform:translateX(-50%); white-space:nowrap;
+  color:#fff; font-size:.68rem; font-weight:700; letter-spacing:.05em; opacity:.75;
+}
+.stepper-node.is-current .stepper-node-label{ opacity:1; color:var(--verde-cta); }
+
+/* ---------------------------------------------------------------------
+ * 5. Dynamic Header
+ * ------------------------------------------------------------------- */
+.dynamic-header{
+  position:relative; width:100%; min-height:72vh; overflow:hidden;
+  display:flex; align-items:flex-end;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.10), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(255,255,255,.08), transparent 45%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 42px),
+    linear-gradient(135deg,#1b2540,#0c1330 60%,#141c38);
+}
+.dynamic-header::before{
+  content:""; position:absolute; inset:0; opacity:.8; transition:background .5s var(--ease);
+}
+.dynamic-header.filtro-amarillo::before{ background:var(--amarillo); }
+.dynamic-header.filtro-naranja::before{ background:var(--naranja); }
+.dynamic-header.filtro-azul-claro::before{ background:var(--azul-claro); }
+.dynamic-header.filtro-azul-oscuro::before{ background:var(--azul-oscuro); }
+.dynamic-header.filtro-verde-claro::before{ background:var(--verde-claro); }
+.dynamic-header.filtro-verde-oscuro::before{ background:var(--verde-oscuro); }
+
+.dynamic-header-watermark{
+  position:absolute; right:2%; top:-6%; font-size:min(46vw,520px); font-weight:800;
+  color:#fff; opacity:.10; line-height:1; z-index:1; pointer-events:none;
+}
+.dynamic-header-content{
+  position:relative; z-index:2; padding:0 6% 64px; max-width:900px;
+}
+.dynamic-header-tag{
+  display:inline-block; background:var(--magenta); color:#fff; font-weight:800;
+  letter-spacing:.08em; font-size:.82rem; padding:8px 18px; border-radius:2px 10px 2px 10px;
+  margin-bottom:20px;
+}
+.dynamic-header-title{
+  color:#fff; font-weight:800; font-size:clamp(1.7rem,4vw,3.2rem); line-height:1.12;
+  text-shadow:0 6px 24px rgba(0,0,0,.25);
+}
+.dynamic-header-brand{
+  position:absolute; right:5%; bottom:5%; z-index:3; background:#fff; border-radius:8px;
+  padding:12px 20px; box-shadow:var(--shadow-soft);
+}
+.dynamic-header-brand span{ font-weight:800; letter-spacing:.05em; color:#3a3f47; font-size:1rem; }
+
+/* ---------------------------------------------------------------------
+ * 6. Split content (video + pregunta)
+ * ------------------------------------------------------------------- */
+.split-content{
+  display:grid; grid-template-columns:1fr 1fr; min-height:70vh; background:var(--gris-fondo);
+}
+.split-text{
+  display:flex; align-items:center; padding:8% 8%;
+}
+.split-text-card{
+  background:#fff; border-left:8px solid var(--verde-cta); border-radius:4px 16px 16px 4px;
+  padding:44px 40px; box-shadow:var(--shadow-soft);
+}
+.split-text-card p{
+  font-family:Georgia,"Times New Roman",serif; font-style:italic; color:var(--navy);
+  font-size:clamp(1.2rem,2vw,1.7rem); line-height:1.5;
+}
+.split-video{
+  position:relative; background:#E7E9ED; display:flex; align-items:center; justify-content:center;
+}
+.split-video-mark{
+  position:absolute; top:24px; left:28px; color:var(--gris-texto); opacity:.4;
+  font-weight:800; letter-spacing:.08em; font-size:.85rem;
+}
+.split-video-frame{
+  position:absolute; inset:0; width:100%; height:100%; border:none; opacity:0; transition:opacity .3s;
+}
+.split-video-frame.is-visible{ opacity:1; }
+.split-video-play{
+  position:relative; z-index:2; width:92px; height:92px; border-radius:50%; background:#fff;
+  border:none; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-soft);
+  transition:transform .25s var(--ease);
+}
+.split-video-play:hover{ transform:scale(1.08); }
+.split-video-play svg{ width:30px;height:30px; margin-left:4px; }
+.split-video.is-playing .split-video-play{ display:none; }
+
+/* ---------------------------------------------------------------------
+ * 7. Lista de recursos
+ * ------------------------------------------------------------------- */
+.resource-section{ padding:70px 6% 100px; }
+.resource-section-head{ max-width:760px; margin:0 auto 30px; text-align:center; }
+.resource-section-head h2{ color:var(--navy); font-size:clamp(1.3rem,2.6vw,1.9rem); font-weight:800; }
+.resource-list{ max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+.resource-card{
+  display:flex; align-items:stretch; background:#fff; border-radius:12px; box-shadow:var(--shadow-soft);
+  overflow:hidden; border:none; width:100%; text-align:left; padding:0;
+  transition:transform .2s var(--ease);
+}
+.resource-card:hover{ transform:translateY(-2px); }
+.resource-num{
+  flex:none; width:64px; background:var(--magenta); color:#fff; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:6px; font-weight:800; font-size:1.05rem;
+}
+.resource-num svg{ width:20px;height:20px; }
+.resource-title{ flex:1; display:flex; align-items:center; padding:18px 20px; color:#3a3f47; font-weight:700; font-size:1rem; }
+.resource-plus{ flex:none; width:56px; display:flex; align-items:center; justify-content:center; color:var(--verde-cta); }
+.resource-plus svg{ width:22px;height:22px; }
+.resource-empty{
+  text-align:center; color:#8b90a0; padding:30px; background:#fff; border-radius:12px; box-shadow:var(--shadow-soft);
+}
+
+/* ---------------------------------------------------------------------
+ * 8. Modal — Visor de recursos
+ * ------------------------------------------------------------------- */
+.resource-modal-overlay{
+  position:fixed; inset:0; z-index:900; background:rgba(6,9,24,.8);
+  opacity:0; pointer-events:none; transition:opacity .3s var(--ease);
+  display:flex; align-items:center; justify-content:center; padding:4vh 3vw;
+}
+.resource-modal-overlay.is-open{ opacity:1; pointer-events:auto; }
+.resource-modal{
+  width:min(880px,100%); max-height:92vh; overflow-y:auto;
+  background:linear-gradient(160deg,var(--navy-2),var(--navy)); border-radius:26px;
+  padding:50px 6% 44px; position:relative; text-align:center; color:#fff;
+  transform:scale(.95); transition:transform .3s var(--ease);
+}
+.resource-modal-overlay.is-open .resource-modal{ transform:scale(1); }
+.resource-modal-close{
+  position:absolute; top:22px; right:22px; width:40px;height:40px; border-radius:50%;
+  background:rgba(255,255,255,.12); border:none; color:#fff; display:flex; align-items:center; justify-content:center;
+}
+.resource-modal-close:hover{ background:rgba(255,255,255,.22); }
+.resource-modal-illustration{ margin:0 auto 18px; width:min(60%,320px); }
+.resource-modal-eyebrow{ color:var(--verde-cta); font-weight:800; letter-spacing:.08em; font-size:.8rem; margin-bottom:10px; }
+.resource-modal-title{ font-size:clamp(1.3rem,3vw,2rem); font-weight:800; margin-bottom:10px; }
+.resource-modal-subtitle{ color:#c7cbe0; font-size:1rem; max-width:560px; margin:0 auto 22px; line-height:1.55; }
+.resource-modal-body{ text-align:left; color:#dfe2f0; line-height:1.7; max-width:640px; margin:0 auto; }
+.resource-modal-body p{ margin-bottom:12px; }
+.resource-modal-mascot{ width:96px; margin:26px auto 0; opacity:.92; }
+
+/* ---------------------------------------------------------------------
+ * 9. Toast
+ * ------------------------------------------------------------------- */
+.toast{
+  position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px);
+  background:var(--navy); color:#fff; padding:13px 22px; border-radius:12px; font-size:.88rem;
+  font-weight:600; display:flex; align-items:center; gap:10px; opacity:0; pointer-events:none;
+  transition:all .3s var(--ease); z-index:1000; box-shadow:var(--shadow-soft);
+}
+.toast.is-visible{ opacity:1; transform:translate(-50%,0); }
+.toast svg{ width:18px;height:18px; color:var(--verde-cta); flex:none; }
+
+/* ---------------------------------------------------------------------
+ * 10. Responsive
+ * ------------------------------------------------------------------- */
+@media (max-width:820px){
+  .hero{ flex-direction:column; height:100vh; }
+  .panel{ clip-path:none !important; margin:0 !important; }
+  .panel-footer{ margin-bottom:10px; }
+  .hero.has-active .panel{ flex-grow:.3; }
+  .hero.has-active .panel.is-active{ flex-grow:8; }
+  .panel-active-title{ max-width:100%; font-size:1.4rem; }
+  .panel-active-illustration svg{ width:70vw; }
+  .split-content{ grid-template-columns:1fr; }
+  .split-video{ min-height:320px; }
+  .dynamic-header-content{ max-width:100%; }
+  .topbar{ flex-wrap:wrap; max-width:78vw; }
+  .topbar-btn span{ display:none; }
+}

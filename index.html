@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visor de recurso V2 — UNINCCA</title>
+<meta name="description" content="Visor interactivo V2 de recursos educativos UNINCCA: acordeón de ejes, encabezado dinámico, video, pregunta detonante y recursos — contenido parametrizado por curso.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0A1440">
+<meta name="color-scheme" content="light">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body class="scroll-locked">
+
+<noscript>
+  <div style="position:fixed;inset:0;background:#0A1440;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:8vw;font-family:Roboto,Arial,sans-serif;z-index:9999">
+    <p>Este contenido interactivo necesita JavaScript habilitado en tu navegador para funcionar. Por favor actívalo y recarga la página.</p>
+  </div>
+</noscript>
+
+<!-- Top bar -->
+<div class="topbar">
+  <button class="topbar-hamburger" id="menuToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="sideMenuOverlay">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <button class="topbar-btn" id="studentViewBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="12" r="3.4"/><circle cx="17" cy="12" r="3.4"/><line x1="10.4" y1="12" x2="13.6" y2="12"/></svg>
+    <span>Ver como estudiante</span>
+  </button>
+  <button class="topbar-btn" id="immersiveReaderBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5.5c2.5-1 5-1 8 0v13c-3-1-5.5-1-8 0v-13z"/><path d="M20 5.5c-2.5-1-5-1-8 0v13c3-1 5.5-1 8 0v-13z"/></svg>
+    <span>Lector inmersivo</span>
+  </button>
+</div>
+
+<!-- Menú lateral -->
+<div class="side-menu-overlay" id="sideMenuOverlay">
+  <nav class="side-menu" aria-label="Navegación del curso">
+    <div class="side-menu-head">
+      <span class="side-menu-title">UNINCCA · Mapa</span>
+      <button class="side-menu-close" id="sideMenuClose" aria-label="Cerrar menú">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+    </div>
+    <div id="sideMenuItems"></div>
+  </nav>
+</div>
+
+<!-- HERO: acordeón horizontal -->
+<section class="hero" id="hero" aria-label="Ejes del curso">
+  <!-- Los 6 paneles se generan en JS a partir de METADATA_EJES (fijo) + datos (JSON) -->
+</section>
+
+<!-- Cuerpo del curso: aparece al desbloquear el scroll -->
+<main id="courseBody">
+
+  <!-- Stepper persistente -->
+  <div class="stepper-wrap">
+    <div class="stepper" id="stepper" role="tablist" aria-label="Progreso del curso">
+      <div class="stepper-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 6 9 12 15 18"/></svg></div>
+      <div class="stepper-nodes" id="stepperNodes"></div>
+      <div class="stepper-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 6 15 12 9 18"/></svg></div>
+    </div>
+  </div>
+
+  <!-- Dynamic Header -->
+  <header class="dynamic-header" id="dynamicHeader">
+    <div class="dynamic-header-watermark" id="dynamicHeaderWatermark" aria-hidden="true"></div>
+    <div class="dynamic-header-content">
+      <span class="dynamic-header-tag" id="dynamicHeaderTag"></span>
+      <h1 class="dynamic-header-title" id="dynamicHeaderTitle"></h1>
+    </div>
+    <div class="dynamic-header-brand"><span>UNINCCA</span></div>
+  </header>
+
+  <!-- Split content: pregunta + video -->
+  <section class="split-content">
+    <div class="split-text">
+      <div class="split-text-card">
+        <p id="splitQuestion"></p>
+      </div>
+    </div>
+    <div class="split-video" id="splitVideo">
+      <span class="split-video-mark">UNINCCA</span>
+      <iframe class="split-video-frame" id="splitVideoFrame" src="" title="Video de la sección" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+      <button class="split-video-play" id="splitVideoPlay" aria-label="Reproducir video">
+        <svg viewBox="0 0 24 24" fill="var(--verde-cta)"><polygon points="6 3 21 12 6 21"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Lista de recursos -->
+  <section class="resource-section">
+    <div class="resource-section-head">
+      <h2>Recursos de esta sección</h2>
+    </div>
+    <div class="resource-list" id="resourceList"></div>
+  </section>
+
+</main>
+
+<!-- Modal de recursos -->
+<div class="resource-modal-overlay" id="resourceModalOverlay">
+  <div class="resource-modal" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
+    <button class="resource-modal-close" id="resourceModalClose" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
+    <div class="resource-modal-illustration" id="resourceModalIllustration"></div>
+    <div class="resource-modal-eyebrow" id="resourceModalEyebrow"></div>
+    <h3 class="resource-modal-title" id="resourceModalTitle"></h3>
+    <p class="resource-modal-subtitle" id="resourceModalSubtitle"></p>
+    <div class="resource-modal-body" id="resourceModalBody"></div>
+    <img class="resource-modal-mascot" id="resourceModalMascot" alt="" aria-hidden="true">
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./assets/js/main.js" defer></script>
+</body>
+</html>
